@@ -23,10 +23,10 @@ ApiRankHomograph _$ApiRankHomographFromJson(Map<String, dynamic> json) =>
       word: json['word'] as String,
       wordPosRank: json['wordPosRank'] as int,
       pos: json['pos'] as String,
-      homographGroup: json['homographGroup'] as int,
       defNumber: json['defNumber'] as int,
       subDef: json['subDef'] as String,
       def: json['def'] as String,
+      homographGroup: json['homographGroup'] as int? ?? -1,
     );
 
 Map<String, dynamic> _$ApiRankHomographToJson(ApiRankHomograph instance) =>
@@ -34,8 +34,8 @@ Map<String, dynamic> _$ApiRankHomographToJson(ApiRankHomograph instance) =>
       'word': instance.word,
       'wordPosRank': instance.wordPosRank,
       'pos': instance.pos,
-      'homographGroup': instance.homographGroup,
       'defNumber': instance.defNumber,
       'subDef': instance.subDef,
       'def': instance.def,
+      'homographGroup': instance.homographGroup,
     };

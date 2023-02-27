@@ -24,10 +24,10 @@ class ApiRankHomograph {
     required this.word,
     required this.wordPosRank,
     required this.pos,
-    required this.homographGroup,
     required this.defNumber,
     required this.subDef,
     required this.def,
+    this.homographGroup = -1,
 });
 
   final String word;
@@ -36,13 +36,13 @@ class ApiRankHomograph {
 
   final String pos;
 
-  final int homographGroup;
-
   final int defNumber;
 
   final String subDef;
 
   final String def;
+
+  int homographGroup;
 
   factory ApiRankHomograph.fromJson(Map<String, dynamic> json) => _$ApiRankHomographFromJson(json);
 
