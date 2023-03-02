@@ -1,6 +1,9 @@
+import 'dart:html';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pluto_grid/pluto_grid.dart';
 
 import '../controller/rank_homographs_controller.dart';
 import '../../data/api/api_rank_homographs.dart';
@@ -15,11 +18,55 @@ class RankHomographsScreen extends ConsumerStatefulWidget {
 
 class _RankHomographsScreenState
     extends ConsumerState<RankHomographsScreen> {
-  List<ApiRankHomograph> rankHomographs = [];
 
   List<ApiRankHomograph> modifiedRankHomographs = [];
 
   final searchedWordCtrl = TextEditingController();
+
+  final List<PlutoColumn> columns = [
+
+    PlutoColumn(
+      title: 'word',
+      field: 'word_field',
+      type: PlutoColumnType.text(),
+      readOnly: true,
+    ),
+    PlutoColumn(
+      title: 'wordPosRank',
+      field: 'wordPosRank_field',
+      type: PlutoColumnType.number(),
+      readOnly: true,
+    ),
+    PlutoColumn(
+      title: 'pos',
+      field: 'pos_field',
+      type: PlutoColumnType.text(),
+      readOnly: true,
+    ),
+    PlutoColumn(
+      title: 'defNumber',
+      field: 'defNumber_field',
+      type: PlutoColumnType.number(),
+      readOnly: true,
+    ),
+    PlutoColumn(
+      title: 'subDef',
+      field: 'subDef_field',
+      type: PlutoColumnType.text(),
+      readOnly: true,
+    ),
+    PlutoColumn(
+      title: 'def',
+      field: 'def_field',
+      type: PlutoColumnType.text(),
+      readOnly: true,
+    ),
+    PlutoColumn(
+      title: 'homographGroup',
+      field: 'homographGroup_field',
+      type: PlutoColumnType.number(),
+    ),
+  ];
 
   @override
   void initState() {
@@ -31,10 +78,81 @@ class _RankHomographsScreenState
     searchedWordCtrl.dispose();
     super.dispose();
   }
+/*
+  List<PlutoRow> convertToPlutoRows(List<ApiRankHomograph> dataList) {
+    List<PlutoRow> listOfPlutoRows = [];
+
+    for(var i = 0; i < dataList.length; i++){
+      PlutoRow singleRow = PlutoRow(
+        cells: {
+          'word_field': PlutoCell(value: dataList[i].word),
+          'wordPosRank_field': PlutoCell(value: dataList[i].wordPosRank),
+          'pos_field': PlutoCell(value: dataList[i].pos),
+          'defNumber_field': PlutoCell(value: dataList[i].defNumber),
+          'subDef_field': PlutoCell(value: dataList[i].subDef),
+          'def_field': PlutoCell(value: dataList[i].def),
+          'homographGroup_field': PlutoCell(value: dataList[i].homographGroup),
+        },
+      );
+      listOfPlutoRows.add(singleRow);
+    }
+    return listOfPlutoRows;
+  }
+
+ */
+
+/*
+  List<PlutoRow> convertToPlutoRows(List<ApiRankHomograph> dataList) {
+
+
+    final plutoRows = dataList.map((data) {
+     return PlutoRow(
+        cells: {
+          'word_field': PlutoCell(value: data.word),
+          'wordPosRank_field': PlutoCell(value: data.wordPosRank),
+          'pos_field': PlutoCell(value: data.pos),
+          'defNumber_field': PlutoCell(value: data.defNumber),
+          'subDef_field': PlutoCell(value: data.subDef),
+          'def_field': PlutoCell(value: data.def),
+          'homographGroup_field': PlutoCell(value: data.homographGroup),
+        },
+      );
+
+    }).toList();
+
+    // listOfPlutoRows.add(plutoRow);
+
+    return plutoRows;
+  }
+
+ */
+
+  List<PlutoRow> convertToPlutoRows(List<ApiRankHomograph> dataList) {
+
+
+    final plutoRows = dataList.map((data) =>
+      PlutoRow(
+        cells: {
+          'word_field': PlutoCell(value: data.word),
+          'wordPosRank_field': PlutoCell(value: data.wordPosRank),
+          'pos_field': PlutoCell(value: data.pos),
+          'defNumber_field': PlutoCell(value: data.defNumber),
+          'subDef_field': PlutoCell(value: data.subDef),
+          'def_field': PlutoCell(value: data.def),
+          'homographGroup_field': PlutoCell(value: data.homographGroup),
+        },
+      )
+
+    ).toList();
+
+    // listOfPlutoRows.add(plutoRow);
+
+    return plutoRows;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final rankHomographs = ref.watch(rankHomographsPod);
+    final AsyncValue<List<ApiRankHomograph>> rankHomographs = ref.watch(rankHomographsPod);
     return Scaffold(
       body: Column(
         children: [
@@ -74,26 +192,25 @@ class _RankHomographsScreenState
           Container(
             child: Expanded(
               child: rankHomographs.when(
-                data: (data) {
-                  if (data.length > 0) {
-                    modifiedRankHomographs = data;
-                  }
-
+                data: (data) { // List<ApiRankHomograph>
+                  modifiedRankHomographs = data;
                   return Container(
-                    child: ListView.builder(
-                      itemCount: data.length,
-                      itemBuilder: (context, index) {
-                        final rankHomograph = data[index];
-                        return Container(
-                          padding: EdgeInsets.all(8),
-                          child: ListTile(
-                            leading: Text(rankHomograph.word),
-                            title: Text(rankHomograph.def),
-                            subtitle: Text(rankHomograph.wordPosRank.toString()),
-                            trailing: Text(rankHomograph.homographGroup.toString()),
-                          ),
-                        );
-                      },
+                    padding: const EdgeInsets.all(30),
+                    child: PlutoGrid(
+                        columns: columns,
+                        rows: convertToPlutoRows(data),
+                        onChanged: (PlutoGridOnChangedEvent event) {
+                          print('onChanged event: $event');
+
+                          print('event.rowIdx: ${event.rowIdx}');
+                          print('event.value: ${event.value}');
+                          print('event.oldValue: ${event.oldValue}');
+
+                          modifiedRankHomographs[event.rowIdx].homographGroup = event.value;
+                        },
+                        onLoaded: (PlutoGridOnLoadedEvent event) {
+                          print(event);
+                        }
                     ),
                   );
                 },
@@ -109,10 +226,10 @@ class _RankHomographsScreenState
           ElevatedButton(
             child: const Text("Save"),
             onPressed: () async {
-              if (modifiedRankHomographs.length > 0) {
+
                 String resString = await ref.read(rankHomographsRepository).updateRankHomographs(modifiedRankHomographs);
                 print('resString: $resString');
-              }
+
 
             },
           ),
